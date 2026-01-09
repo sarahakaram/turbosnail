@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thank You - AI Leadership Retreat</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>AI Leadership Retreat</h1>
+            <p class="tagline">Navigate the Fast-Paced Future of AI</p>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="container">
+                <div class="success-message">
+                    <div class="checkmark">✓</div>
+                    <h2>Thank You for Registering!</h2>
+                    <p>We've received your registration for the AI Leadership Retreat in the Santa Cruz Mountains.</p>
+                    <p>We're excited to have you join us for this transformative experience. You'll receive a confirmation email shortly at <strong id="userEmail"></strong> with additional details about the retreat.</p>
+                    <div style="margin-top: 2rem; padding-top: 2rem; border-top: 2px solid var(--border-color);">
+                        <h3 style="color: var(--secondary-color); margin-bottom: 1rem;">What's Next?</h3>
+                        <ul style="text-align: left; max-width: 400px; margin: 0 auto; color: var(--text-light); line-height: 1.8;">
+                            <li style="margin-bottom: 0.75rem;">Check your email for confirmation and retreat details</li>
+                            <li style="margin-bottom: 0.75rem;">You'll receive a detailed agenda within 48 hours</li>
+                            <li style="margin-bottom: 0.75rem;">We'll send logistics information (parking, accommodations, etc.) one week before the event</li>
+                            <li style="margin-bottom: 0.75rem;">Prepare any questions you'd like to explore during the retreat</li>
+                        </ul>
+                    </div>
+                    <div style="margin-top: 2rem;">
+                        <a href="index.html" class="btn-primary" style="text-decoration: none; display: inline-block;">Return to Home</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="about">
+            <div class="container">
+                <h2>While You Wait...</h2>
+                <div class="about-grid">
+                    <div class="about-item">
+                        <h3>📚 Prepare</h3>
+                        <p>Reflect on your organization's AI challenges and opportunities you'd like to discuss</p>
+                    </div>
+                    <div class="about-item">
+                        <h3>🤝 Connect</h3>
+                        <p>Think about what you'd like to learn from fellow leaders in attendance</p>
+                    </div>
+                    <div class="about-item">
+                        <h3>🌲 Get Ready</h3>
+                        <p>Prepare for a peaceful, immersive experience away from daily distractions</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 AI Leadership Retreat. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Display user's email from localStorage
+        document.addEventListener('DOMContentLoaded', function() {
+            const registrationData = localStorage.getItem('registrationData');
+
+            if (registrationData) {
+                try {
+                    const data = JSON.parse(registrationData);
+                    const emailElement = document.getElementById('userEmail');
+
+                    if (emailElement && data.email) {
+                        emailElement.textContent = data.email;
+                    }
+                } catch (e) {
+                    console.error('Error parsing registration data:', e);
+                }
+            } else {
+                // If no registration data found, redirect to home
+                // (user may have navigated directly to this page)
+                // Uncomment the line below if you want to enforce this
+                // window.location.href = 'index.html';
+            }
+        });
+    </script>
+</body>
+</html>
