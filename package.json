@@ -5,7 +5,8 @@
   "main": "parse-email.js",
   "scripts": {
     "parse": "node parse-email.js",
-    "test": "node parse-email.js"
+    "zapier": "node zapier-step.js",
+    "test": "node parse-email.js && node zapier-step.js"
   },
   "repository": {
     "type": "git",
