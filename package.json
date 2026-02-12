@@ -1,0 +1,17 @@
+{
+  "name": "turbosnail",
+  "version": "1.0.0",
+  "description": "Coaching tool for leaders with ADHD/Autistic-leaning patterns — Species Blueprint Email Parser",
+  "main": "parse-email.js",
+  "scripts": {
+    "parse": "node parse-email.js",
+    "test": "node parse-email.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "http://local_proxy@127.0.0.1:28294/git/sarahakaram/turbosnail"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
