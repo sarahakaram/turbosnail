@@ -56,29 +56,31 @@ function readEmailFromStdin() {
 // ===== Demo Email ===========================================================
 
 const DEMO_EMAIL = `
-Hi Maria,
+So good seeing you in person today, Evan! Thanks for hosting me. Love
+the South Park Commons space and the creative energy.
 
-I just wanted to make sure you understand why I went ahead and moved
-the project timeline — the reason I'm doing this is because the client
-shifted their launch window and I felt like we needed to respond. I know
-this might seem abrupt but I think it's the right call long-term.
+Below is a bio and here is my website if you want to add it as a
+potential service for your community. I'm also happy to offer a promo
+rate if that's of interest.
 
-Would it be okay if I also reassigned the two junior devs to the new
-sprint? I don't want to overstep but I think the team could use the
-help. Do you think I should loop in James too, or is that too many
-cooks?
+Hope to see you again in person soon!
 
-I'm really worried that if we don't move on this TODAY we're going to
-miss the window entirely and lose the account. This feels critical.
-Can we get everyone on a call ASAP? I'll make it work — whatever the
-team needs, I'll just adjust my schedule.
+Sarah
 
-Sorry for the long email. Just my humble opinion, but I think building
-toward a sustainable pace matters more than hitting every short-term
-target. Feel free to push back.
+Sarah helps founders upgrade their internal operating system, to best
+support their external growth. A former Managing Director at Google,
+she spent 12 years scaling teams and growing the mobile app store
+business from $10M to $1B. Having also founded and exited a mobile
+gaming startup, and developed new business lines at LivingSocial and
+shopkick, Sarah understands the realities of hyper-growth from both
+the founder and executive perspective.
 
-Thanks,
-Alex
+Through her practice, Anbara, Sarah partners with leaders to unlock
+autonomy, mastery, and purpose. She is a PCC-certified executive
+coach, who is dedicated to helping leaders turn their unique identities
+into their greatest leadership superpowers. Sarah is also an author of
+a weekly leadership newsletter, The Wake Up, and serves as a board
+member for Women of MENA in Tech.
 `;
 
 // ===== Main =================================================================
