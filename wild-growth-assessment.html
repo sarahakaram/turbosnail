@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wild Growth Leadership Assessment</title>
+  <meta property="og:title" content="Wild Growth Leadership Assessment">
+  <meta property="og:description" content="Discover which of the 7 tree species matches your leadership growth pattern.">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: #F9F8F5;
+      color: #2C3E2D;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 40px 24px;
+    }
+
+    /* --- Screens --- */
+    .screen { display: none; }
+    .screen.active { display: block; }
+
+    /* --- Intro --- */
+    .intro-header {
+      text-align: center;
+      margin-bottom: 36px;
+    }
+
+    .eyebrow {
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      font-size: 12px;
+      color: #7C8A6E;
+      margin-bottom: 16px;
+    }
+
+    .intro-header h1 {
+      font-family: Georgia, 'Times New Roman', serif;
+      font-size: 36px;
+      font-weight: 700;
+      color: #2C3E2D;
+      line-height: 1.2;
+      margin-bottom: 16px;
+    }
+
+    .intro-header .subtitle {
+      font-size: 18px;
+      color: #5A6B5C;
+      font-style: italic;
+      font-family: Georgia, 'Times New Roman', serif;
+    }
+
+    .intro-body {
+      font-size: 16px;
+      color: #4A5A4C;
+      margin-bottom: 32px;
+    }
+
+    .intro-body p { margin-bottom: 16px; }
+
+    .intro-dimensions {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 36px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+
+    .intro-dimensions h3 {
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: #7C8A6E;
+      margin-bottom: 16px;
+    }
+
+    .dimension-item {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      margin-bottom: 10px;
+      font-size: 15px;
+    }
+
+    .dimension-item .label {
+      font-weight: 600;
+      color: #2C3E2D;
+      white-space: nowrap;
+    }
+
+    .dimension-item .desc { color: #5A6B5C; }
+
+    .intro-note {
+      text-align: center;
+      font-size: 14px;
+      color: #9CA38F;
+      margin-bottom: 32px;
+    }
+
+    /* --- Button --- */
+    .btn {
+      display: inline-block;
+      background: #2C3E2D;
+      color: white;
+      border: none;
+      padding: 16px 40px;
+      font-size: 16px;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      letter-spacing: 0.5px;
+    }
+
+    .btn:hover {
+      background: #3D5240;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(44,62,45,0.2);
+    }
+
+    .btn-center { text-align: center; }
+
+    /* --- Progress Bar --- */
+    .progress-bar {
+      width: 100%;
+      height: 4px;
+      background: #E8E6E1;
+      border-radius: 2px;
+      margin-bottom: 40px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: #5A7C5E;
+      border-radius: 2px;
+      transition: width 0.4s ease;
+    }
+
+    .question-count {
+      text-align: center;
+      font-size: 13px;
+      color: #9CA38F;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 12px;
+    }
+
+    /* --- Question --- */
+    .question-text {
+      font-family: Georgia, 'Times New Roman', serif;
+      font-size: 22px;
+      font-weight: 600;
+      color: #2C3E2D;
+      text-align: center;
+      margin-bottom: 32px;
+      line-height: 1.4;
+    }
+
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .option {
+      background: white;
+      border: 2px solid #E8E6E1;
+      border-radius: 12px;
+      padding: 18px 24px;
+      font-size: 16px;
+      color: #2C3E2D;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: left;
+      line-height: 1.5;
+    }
+
+    .option:hover {
+      border-color: #5A7C5E;
+      background: #F5F7F3;
+    }
+
+    .option.selected {
+      border-color: #5A7C5E;
+      background: #EDF2EB;
+    }
+
+    .quiz-nav {
+      margin-top: 24px;
+      text-align: center;
+    }
+
+    .back-link {
+      display: inline-block;
+      font-size: 14px;
+      color: #9CA38F;
+      cursor: pointer;
+      border: none;
+      background: none;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .back-link:hover { color: #5A6B5C; }
+
+    /* --- Results --- */
+    .result-card {
+      background: white;
+      border-radius: 16px;
+      padding: 40px 32px;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.08);
+      margin-bottom: 24px;
+      border-top: 6px solid var(--species-color, #5A7C5E);
+    }
+
+    .result-eyebrow {
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      font-size: 12px;
+      margin-bottom: 8px;
+      color: var(--species-color, #5A7C5E);
+    }
+
+    .result-species {
+      font-family: Georgia, 'Times New Roman', serif;
+      font-size: 36px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      line-height: 1.2;
+      color: #2C3E2D;
+    }
+
+    .result-tagline {
+      font-size: 15px;
+      font-style: italic;
+      margin-bottom: 24px;
+      color: #7C8A6E;
+    }
+
+    .result-quote {
+      font-family: Georgia, 'Times New Roman', serif;
+      font-size: 16px;
+      font-style: italic;
+      padding: 20px 0;
+      border-top: 1px solid #E8E6E1;
+      border-bottom: 1px solid #E8E6E1;
+      margin-bottom: 24px;
+      color: #5A6B5C;
+      text-align: center;
+    }
+
+    .result-description {
+      font-size: 16px;
+      line-height: 1.7;
+      color: #3D4F3E;
+      margin-bottom: 28px;
+    }
+
+    .result-traits {
+      display: grid;
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+
+    .trait {
+      padding: 16px;
+      border-radius: 8px;
+      background: #F9F8F5;
+    }
+
+    .trait-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      font-weight: 700;
+      margin-bottom: 4px;
+      color: var(--species-color, #5A7C5E);
+    }
+
+    .trait-value {
+      font-size: 15px;
+      color: #3D4F3E;
+    }
+
+    .result-section { margin-bottom: 24px; }
+
+    .result-section h3 {
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 12px;
+      color: var(--species-color, #5A7C5E);
+    }
+
+    .result-section ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .result-section li {
+      font-size: 15px;
+      color: #3D4F3E;
+      padding: 5px 0 5px 20px;
+      position: relative;
+    }
+
+    .result-section li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 13px;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--species-color, #5A7C5E);
+      opacity: 0.4;
+    }
+
+    /* --- Secondary Result --- */
+    .secondary-result {
+      background: #F5F7F3;
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+
+    .secondary-result h3 {
+      font-size: 16px;
+      margin-bottom: 6px;
+      color: #2C3E2D;
+    }
+
+    .secondary-result p {
+      font-size: 14px;
+      color: #5A6B5C;
+      line-height: 1.6;
+    }
+
+    /* --- CTA --- */
+    .cta-section {
+      text-align: center;
+      padding: 36px 32px;
+      background: #2C3E2D;
+      border-radius: 16px;
+      color: white;
+      margin-bottom: 24px;
+    }
+
+    .cta-section h3 {
+      font-family: Georgia, 'Times New Roman', serif;
+      font-size: 22px;
+      margin-bottom: 8px;
+    }
+
+    .cta-section p {
+      font-size: 15px;
+      opacity: 0.8;
+      margin-bottom: 24px;
+    }
+
+    .btn-cta {
+      display: inline-block;
+      background: white;
+      color: #2C3E2D;
+      border: none;
+      padding: 14px 36px;
+      font-size: 16px;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+    }
+
+    .btn-cta:hover {
+      background: #F0EDE8;
+      transform: translateY(-1px);
+    }
+
+    .retake-section {
+      text-align: center;
+    }
+
+    .retake-link {
+      font-size: 14px;
+      color: #9CA38F;
+      cursor: pointer;
+      border: none;
+      background: none;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .retake-link:hover { color: #5A6B5C; }
+
+    /* --- Animations --- */
+    .fade-in {
+      animation: fadeIn 0.4s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* --- Responsive --- */
+    @media (max-width: 480px) {
+      .container { padding: 24px 16px; }
+      .intro-header h1 { font-size: 28px; }
+      .question-text { font-size: 19px; }
+      .result-species { font-size: 28px; }
+      .result-card { padding: 28px 20px; }
+      .cta-section { padding: 28px 20px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <!-- ========== INTRO SCREEN ========== -->
+    <div id="intro" class="screen active">
+      <div class="intro-header">
+        <div class="eyebrow">Wild Growth Framework</div>
+        <h1>Discover Your Leadership Species</h1>
+        <p class="subtitle">You're not broken. You're just a different species.</p>
+      </div>
+
+      <div class="intro-body">
+        <p>Not all leaders grow the same way. A Baobab trying to grow like an Oak will always feel like something's wrong. But nothing is wrong &mdash; you're simply a different species, with your own way of processing, pacing, and activating your best work.</p>
+        <p>This short assessment will help you discover which of seven tree species matches your natural leadership growth pattern.</p>
+      </div>
+
+      <div class="intro-dimensions">
+        <h3>What we'll explore</h3>
+        <div class="dimension-item">
+          <span class="label">Processing</span>
+          <span class="desc">&mdash; How you take in and work through information</span>
+        </div>
+        <div class="dimension-item">
+          <span class="label">Pacing</span>
+          <span class="desc">&mdash; Your natural rhythm of growth and output</span>
+        </div>
+        <div class="dimension-item">
+          <span class="label">Activation</span>
+          <span class="desc">&mdash; What conditions trigger your best performance</span>
+        </div>
+      </div>
+
+      <p class="intro-note">10 questions &middot; ~3 minutes &middot; No right or wrong answers</p>
+
+      <div class="btn-center">
+        <button class="btn" onclick="startQuiz()">Begin Assessment</button>
+      </div>
+    </div>
+
+    <!-- ========== QUIZ SCREEN ========== -->
+    <div id="quiz" class="screen">
+      <div class="progress-bar">
+        <div class="progress-fill" id="progress"></div>
+      </div>
+      <div class="question-count" id="questionCount"></div>
+      <h2 class="question-text" id="questionText"></h2>
+      <div class="options" id="options"></div>
+      <div class="quiz-nav">
+        <button class="back-link" id="backBtn" onclick="goBack()">&larr; Previous question</button>
+      </div>
+    </div>
+
+    <!-- ========== RESULTS SCREEN ========== -->
+    <div id="results" class="screen">
+      <div class="result-card" id="resultCard">
+        <div class="result-eyebrow">Your leadership species</div>
+        <div class="result-species" id="resultSpecies"></div>
+        <div class="result-tagline" id="resultTagline"></div>
+        <div class="result-quote" id="resultQuote"></div>
+        <div class="result-description" id="resultDescription"></div>
+        <div class="result-traits" id="resultTraits"></div>
+        <div class="result-section" id="resultUnlocks">
+          <h3>What unlocks your best work</h3>
+          <ul id="unlocksList"></ul>
+        </div>
+        <div class="result-section" id="resultDrains">
+          <h3>What drains you</h3>
+          <ul id="drainsList"></ul>
+        </div>
+      </div>
+
+      <div class="secondary-result" id="secondaryResult" style="display:none;">
+        <h3 id="secondaryTitle"></h3>
+        <p id="secondaryText"></p>
+      </div>
+
+      <div class="cta-section">
+        <h3>Ready to build your growth habitat?</h3>
+        <p>Understanding your species is just the beginning. Let's design the conditions for your best leadership.</p>
+        <!-- Replace the href below with your booking link -->
+        <a href="#" class="btn-cta">Book a Discovery Session</a>
+      </div>
+
+      <div class="retake-section">
+        <button class="retake-link" onclick="retake()">Retake assessment</button>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // ===== QUESTIONS =====
+    const questions = [
+      {
+        text: "When facing a complex decision, I prefer to:",
+        options: [
+          { text: "Retreat and think deeply \u2014 I may not surface for a while", species: "baobab" },
+          { text: "Talk it through with someone \u2014 I think by speaking", species: "mangrove" },
+          { text: "Work through it methodically, step by step", species: "oak" },
+          { text: "Discuss with my team and build on each other\u2019s ideas", species: "aspen" }
+        ]
+      },
+      {
+        text: "My thinking process is best described as:",
+        options: [
+          { text: "Invisible \u2014 it happens underground until I surface with something complete", species: "baobab" },
+          { text: "Messy and visible \u2014 whiteboards, notes, talking it out", species: "mangrove" },
+          { text: "Dormant until something sparks, then laser-focused", species: "bamboo" },
+          { text: "Adaptive \u2014 I shift my approach to whatever the context demands", species: "willow" }
+        ]
+      },
+      {
+        text: "When I need to learn something new, I:",
+        options: [
+          { text: "Immerse myself solo \u2014 reading, researching, connecting ideas across domains", species: "baobab" },
+          { text: "Find an organization, system, or mentor to learn from up close", species: "strangler" },
+          { text: "Jump in and figure it out \u2014 I\u2019ll adapt as I go", species: "willow" },
+          { text: "Learn best alongside a team through collaboration", species: "aspen" }
+        ]
+      },
+      {
+        text: "My growth pattern over time has been:",
+        options: [
+          { text: "Long invisible preparation, then something significant emerges", species: "baobab" },
+          { text: "Continuous and active \u2014 always building, always iterating", species: "mangrove" },
+          { text: "Explosive bursts of productivity between quieter periods", species: "bamboo" },
+          { text: "Steady, incremental progress \u2014 consistent year after year", species: "oak" }
+        ]
+      },
+      {
+        text: "My relationship with timelines is:",
+        options: [
+          { text: "I need long horizons \u2014 my best work can\u2019t be rushed", species: "oak" },
+          { text: "I\u2019m always in motion \u2014 sustainability comes from the momentum itself", species: "mangrove" },
+          { text: "Nothing happens, then suddenly I CAN\u2019T STOP", species: "bamboo" },
+          { text: "I pivot quickly \u2014 try, learn, adjust, repeat", species: "willow" }
+        ]
+      },
+      {
+        text: "When I look at my career, I notice:",
+        options: [
+          { text: "I spent years learning inside established systems before branching out", species: "strangler" },
+          { text: "I\u2019ve pivoted across roles, domains, and industries frequently", species: "willow" },
+          { text: "My team\u2019s growth has always mattered more than my individual path", species: "aspen" },
+          { text: "I\u2019ve stayed the course \u2014 building slowly and durably over long stretches", species: "oak" }
+        ]
+      },
+      {
+        text: "I do my best work when:",
+        options: [
+          { text: "I have deep, complex problems and plenty of time", species: "baobab" },
+          { text: "Things are dynamic and shifting \u2014 I thrive in ambiguity", species: "mangrove" },
+          { text: "A deadline or crisis creates urgency that ignites me", species: "bamboo" },
+          { text: "I\u2019m part of a team with a shared mission", species: "aspen" }
+        ]
+      },
+      {
+        text: "The environment that brings out my best:",
+        options: [
+          { text: "Autonomy with trust in my progress, even when it\u2019s not visible", species: "baobab" },
+          { text: "Clear structure early on, with growing independence over time", species: "strangler" },
+          { text: "Variety and novelty \u2014 new challenges that keep me on my toes", species: "willow" },
+          { text: "Stability and predictability with clear expectations", species: "oak" }
+        ]
+      },
+      {
+        text: "What drains me most:",
+        options: [
+          { text: "Being expected to start from scratch with no structure to learn from", species: "strangler" },
+          { text: "Quiet, heads-down environments with no interaction", species: "mangrove" },
+          { text: "Repetition and sameness \u2014 no novelty, no change", species: "willow" },
+          { text: "Solo work without a team or community around me", species: "aspen" }
+        ]
+      },
+      {
+        text: "When starting something entirely new:",
+        options: [
+          { text: "I need a long runway to build my foundation before anything emerges", species: "baobab" },
+          { text: "I jump in and start making things \u2014 I figure it out by doing", species: "mangrove" },
+          { text: "I can\u2019t start until something triggers me \u2014 then I\u2019m unstoppable", species: "bamboo" },
+          { text: "I look for an existing system or structure to learn from first", species: "strangler" }
+        ]
+      }
+    ];
+
+    // ===== SPECIES DATA =====
+    const speciesData = {
+      baobab: {
+        name: "The Baobab",
+        color: "#926B2A",
+        tagline: "Deep-rooted  \u00B7  Slow-emergent  \u00B7  Unfashionably patient",
+        quote: "\u201CNature does not hurry, yet everything is accomplished.\u201D \u2014 Lao Tzu",
+        description: "Your thinking happens underground. You build comprehensive mental models through deep, invisible processing before producing anything visible. What looks like \"nothing happening\" is actually everything happening. When you finally emerge, your work is mature, complete, and lasting. You don\u2019t iterate fast \u2014 you build permanently.",
+        traits: [
+          { label: "Processing", value: "Internal & deep \u2014 extensive associative networks, invisible to others" },
+          { label: "Pacing", value: "Extended preparation, then permanence \u2014 80% of energy goes underground first" },
+          { label: "Activation", value: "Long horizons and deep, complex problems requiring comprehensive understanding" }
+        ],
+        unlocks: [
+          "Long time horizons and complex systems problems",
+          "Space for deep, uninterrupted preparation",
+          "Trust that roots are growing even when nothing\u2019s visible",
+          "Autonomy and minimal interruption"
+        ],
+        drains: [
+          "Pressure for weekly updates and constant shipping",
+          "\"Move fast and break things\" culture",
+          "Constant context switching",
+          "Short-term thinking and quarterly metrics"
+        ]
+      },
+      mangrove: {
+        name: "The Mangrove",
+        color: "#1A7A7E",
+        tagline: "External processor  \u00B7  Visible roots  \u00B7  Thrives in flux",
+        quote: "\u201CHow do I know what I think until I see what I say?\u201D \u2014 E.M. Forster",
+        description: "You think by externalizing \u2014 talking, whiteboarding, writing, moving. The mess IS the method. Your aerial roots are visible to everyone, and that\u2019s not disorganization \u2014 it\u2019s how you process. You thrive in dynamic, chaotic environments that would overwhelm others, maintaining a sustainable intensity through constant motion.",
+        traits: [
+          { label: "Processing", value: "External & visible \u2014 thinking happens through talking, writing, whiteboarding" },
+          { label: "Pacing", value: "Continuous & sustained \u2014 always active, always iterating, energizing not depleting" },
+          { label: "Activation", value: "Chaos, flux, and dynamic environments \u2014 shifting requirements and ambiguity" }
+        ],
+        unlocks: [
+          "Dynamic environments with lots of stimulation",
+          "Conversation partners and thought partners",
+          "Variety, movement, and multiple inputs",
+          "External scaffolding for working memory"
+        ],
+        drains: [
+          "Quiet, heads-down, no-interruptions environments",
+          "Isolation and solo contemplation",
+          "Rigid, overly structured settings",
+          "Expectations to process silently"
+        ]
+      },
+      bamboo: {
+        name: "The Bamboo",
+        color: "#3D8B37",
+        tagline: "Dormant \u2192 Explosive  \u00B7  Urgency-driven  \u00B7  Unstoppable when triggered",
+        quote: "\u201CThe bamboo that bends is stronger than the oak that resists.\u201D \u2014 Japanese Proverb",
+        description: "You alternate between dormancy and explosive bursts of productivity. During quiet periods, you\u2019re not lazy \u2014 you neurologically cannot engage yet. But when a trigger hits \u2014 a deadline, a crisis, sudden clarity \u2014 you become an unstoppable force of hyperfocus. You can\u2019t force the timing, but you can learn to create the conditions that activate you.",
+        traits: [
+          { label: "Processing", value: "Context-dependent \u2014 subconscious percolation during dormancy, then rapid intensive execution" },
+          { label: "Pacing", value: "Dormant \u2192 Explosive burst \u2014 long quiet periods, then weeks of obsessive, unstoppable work" },
+          { label: "Activation", value: "Urgency triggers \u2014 deadlines, crises, novelty, passion ignition, \u201Ceverything clicks\u201D moments" }
+        ],
+        unlocks: [
+          "Clear urgency and meaningful deadlines",
+          "People who hold you accountable",
+          "Novelty and interest sparks",
+          "Crisis situations that demand rapid response"
+        ],
+        drains: [
+          "Forced consistency without urgency",
+          "\"Just start small\" advice and Pomodoro methods",
+          "Lack of accountability or external structure",
+          "Environments that penalize irregular rhythms"
+        ]
+      },
+      strangler: {
+        name: "The Strangler Fig",
+        color: "#6B4F82",
+        tagline: "Scaffolded learner  \u00B7  System absorber  \u00B7  Strategic independence",
+        quote: "\u201CIf I have seen further, it is by standing on the shoulders of giants.\u201D \u2014 Isaac Newton",
+        description: "You grow by first attaching to existing systems \u2014 learning deeply from within established organizations, mentors, and structures. Over time, you internalize what you\u2019ve absorbed and develop true independence. When you finally break free, you\u2019re not starting from scratch. You understand the industry deeply, know what works at scale, and have the credibility to build something of your own.",
+        traits: [
+          { label: "Processing", value: "External \u2192 Internal \u2014 starts by learning inside visible systems, gradually internalizes" },
+          { label: "Pacing", value: "Scaffolded learning \u2192 Independence \u2014 years inside existing systems, then autonomous operation" },
+          { label: "Activation", value: "Clear structure first, then growing autonomy \u2014 needs to understand before creating" }
+        ],
+        unlocks: [
+          "Established organizations and systems to learn from",
+          "Strong mentorship and clear processes",
+          "Time to deeply understand how things work",
+          "Later: independence to apply learned principles"
+        ],
+        drains: [
+          "Pressure to \u201Cjust start\u201D from scratch",
+          "Cold starts with no structure or scaffolding",
+          "Staying too long in one host system",
+          "Environments that don\u2019t value learning-first approaches"
+        ]
+      },
+      willow: {
+        name: "The Willow",
+        color: "#5D8A66",
+        tagline: "Adaptive  \u00B7  Multi-modal  \u00B7  Novelty-seeking",
+        quote: "\u201CThe measure of intelligence is the ability to change.\u201D \u2014 Albert Einstein",
+        description: "Your flexibility is your superpower. You adapt fluidly to whatever your environment demands \u2014 processing however the context requires, pivoting quickly based on feedback, and thriving on variety. You\u2019re not flighty or unfocused. You\u2019re strategically adaptive, learning fast across multiple domains and optimizing for context rather than rigidity.",
+        traits: [
+          { label: "Processing", value: "Adaptive & multi-modal \u2014 reads the room and adjusts approach to fit the situation" },
+          { label: "Pacing", value: "Responsive & iterative \u2014 try, learn, adjust, move forward" },
+          { label: "Activation", value: "Change, novelty, and variety \u2014 energized by new domains, problems, and contexts" }
+        ],
+        unlocks: [
+          "New challenges and unfamiliar domains",
+          "Variety in roles, projects, and problems",
+          "Freedom to pivot and iterate quickly",
+          "Environments that reward adaptability"
+        ],
+        drains: [
+          "Repetition and doing the same thing indefinitely",
+          "Rigid structures with no room to adapt",
+          "Pressure to specialize in one narrow area",
+          "Stagnant environments with no change"
+        ]
+      },
+      oak: {
+        name: "The Oak",
+        color: "#7B5B3A",
+        tagline: "Steady  \u00B7  Reliable  \u00B7  Marathon mindset",
+        quote: "\u201CGreat things are done by a series of small things brought together.\u201D \u2014 Vincent Van Gogh",
+        description: "Your consistency IS your greatness. While others sprint and stall, you maintain the same pace indefinitely \u2014 showing visible, steady progress year after year like growth rings. You build things that last through methodical, incremental effort. You don\u2019t need chaos or bursts of inspiration. You need stability, clear expectations, and the long-term horizon to do what you do best.",
+        traits: [
+          { label: "Processing", value: "Internal & structured \u2014 methodical, organized, systematic thinking with visible progress" },
+          { label: "Pacing", value: "Sustained & incremental \u2014 steady compound growth over years and decades" },
+          { label: "Activation", value: "Stability, predictability, and long horizons \u2014 clear expectations and sustainable pace" }
+        ],
+        unlocks: [
+          "Stable environments with clear expectations",
+          "Long-term vision and predictable rhythms",
+          "Building something durable that lasts",
+          "Consistency and sustainable pace"
+        ],
+        drains: [
+          "Chaos and constant pivots",
+          "\"Move fast and break things\" culture",
+          "Ambiguity and shifting expectations",
+          "Short-term thinking and fire drills"
+        ]
+      },
+      aspen: {
+        name: "The Aspen Grove",
+        color: "#A88420",
+        tagline: "Collective  \u00B7  Collaborative  \u00B7  Team-powered",
+        quote: "\u201CIf you want to go fast, go alone. If you want to go far, go together.\u201D \u2014 African Proverb",
+        description: "You\u2019re not just a leader \u2014 you\u2019re a multiplier. Your ideas emerge from collective thinking, and your greatest work happens when you\u2019re growing alongside a team with shared purpose. You think in terms of \u201Cwe,\u201D build on others\u2019 ideas, and measure success by your team\u2019s capability over time. Like an Aspen grove, your root system is interconnected \u2014 the collective IS the organism.",
+        traits: [
+          { label: "Processing", value: "Collaborative & distributed \u2014 ideas emerge from group interaction, building on others" },
+          { label: "Pacing", value: "Sustained & collective \u2014 long-term interconnected growth measured in team capability" },
+          { label: "Activation", value: "Collaborative context and shared purpose \u2014 energized by collective ownership" }
+        ],
+        unlocks: [
+          "Team environments with strong collective identity",
+          "Shared goals and distributed leadership",
+          "Collaboration and community",
+          "Opportunities to elevate others"
+        ],
+        drains: [
+          "Solo work and individual contributor roles",
+          "\"Lone wolf\" expectations",
+          "Disconnection from community",
+          "Environments that only reward individual achievement"
+        ]
+      }
+    };
+
+    // ===== STATE =====
+    let currentQuestion = 0;
+    let answers = []; // stores species string for each answered question
+
+    // ===== FUNCTIONS =====
+    function shuffleArray(arr) {
+      const shuffled = [...arr];
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      return shuffled;
+    }
+
+    function showScreen(id) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function startQuiz() {
+      currentQuestion = 0;
+      answers = [];
+      showScreen('quiz');
+      showQuestion();
+    }
+
+    function showQuestion() {
+      const q = questions[currentQuestion];
+      const total = questions.length;
+
+      document.getElementById('progress').style.width = ((currentQuestion / total) * 100) + '%';
+      document.getElementById('questionCount').textContent = 'Question ' + (currentQuestion + 1) + ' of ' + total;
+      document.getElementById('questionText').textContent = q.text;
+
+      const optionsEl = document.getElementById('options');
+      optionsEl.innerHTML = '';
+      optionsEl.classList.add('fade-in');
+      setTimeout(() => optionsEl.classList.remove('fade-in'), 400);
+
+      const shuffledOptions = shuffleArray(q.options);
+
+      shuffledOptions.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.className = 'option';
+        btn.textContent = opt.text;
+        if (answers[currentQuestion] === opt.species) {
+          btn.classList.add('selected');
+        }
+        btn.addEventListener('click', () => selectOption(opt.species, btn));
+        optionsEl.appendChild(btn);
+      });
+
+      const backBtn = document.getElementById('backBtn');
+      backBtn.style.display = currentQuestion === 0 ? 'none' : 'inline-block';
+    }
+
+    function selectOption(species, btnEl) {
+      // Highlight selection
+      document.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
+      btnEl.classList.add('selected');
+
+      // Store answer
+      answers[currentQuestion] = species;
+
+      // Advance after brief delay
+      setTimeout(() => {
+        if (currentQuestion < questions.length - 1) {
+          currentQuestion++;
+          showQuestion();
+        } else {
+          showResults();
+        }
+      }, 350);
+    }
+
+    function goBack() {
+      if (currentQuestion > 0) {
+        currentQuestion--;
+        showQuestion();
+      }
+    }
+
+    function calculateScores() {
+      const scores = {};
+      Object.keys(speciesData).forEach(key => scores[key] = 0);
+      answers.forEach(species => {
+        if (species && scores[species] !== undefined) {
+          scores[species] += 2;
+        }
+      });
+      return scores;
+    }
+
+    function showResults() {
+      const scores = calculateScores();
+
+      // Sort species by score descending
+      const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1]);
+      const primaryKey = sorted[0][0];
+      const primaryScore = sorted[0][1];
+      const secondaryKey = sorted[1][0];
+      const secondaryScore = sorted[1][1];
+
+      const primary = speciesData[primaryKey];
+
+      // Set species color
+      const resultCard = document.getElementById('resultCard');
+      resultCard.style.setProperty('--species-color', primary.color);
+
+      // Populate result
+      document.getElementById('resultSpecies').textContent = primary.name;
+      document.getElementById('resultTagline').textContent = primary.tagline;
+      document.getElementById('resultQuote').textContent = primary.quote;
+      document.getElementById('resultDescription').textContent = primary.description;
+
+      // Traits
+      const traitsEl = document.getElementById('resultTraits');
+      traitsEl.innerHTML = '';
+      primary.traits.forEach(t => {
+        const div = document.createElement('div');
+        div.className = 'trait';
+        div.innerHTML = '<div class="trait-label">' + t.label + '</div><div class="trait-value">' + t.value + '</div>';
+        traitsEl.appendChild(div);
+      });
+
+      // Unlocks
+      const unlocksList = document.getElementById('unlocksList');
+      unlocksList.innerHTML = '';
+      primary.unlocks.forEach(item => {
+        const li = document.createElement('li');
+        li.textContent = item;
+        unlocksList.appendChild(li);
+      });
+
+      // Drains
+      const drainsList = document.getElementById('drainsList');
+      drainsList.innerHTML = '';
+      primary.drains.forEach(item => {
+        const li = document.createElement('li');
+        li.textContent = item;
+        drainsList.appendChild(li);
+      });
+
+      // Secondary species (show if within 2 points)
+      const secondaryEl = document.getElementById('secondaryResult');
+      if (secondaryScore > 0 && (primaryScore - secondaryScore) <= 2) {
+        const secondary = speciesData[secondaryKey];
+        secondaryEl.style.display = 'block';
+        document.getElementById('secondaryTitle').textContent = 'You also share traits with ' + secondary.name;
+        document.getElementById('secondaryText').textContent = secondary.description;
+      } else {
+        secondaryEl.style.display = 'none';
+      }
+
+      // Update progress bar to full
+      document.getElementById('progress').style.width = '100%';
+
+      showScreen('results');
+    }
+
+    function retake() {
+      currentQuestion = 0;
+      answers = [];
+      showScreen('intro');
+    }
+  </script>
+</body>
+</html>
