@@ -1,0 +1,228 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  COACH
+  CLIENT
+}
+
+enum EngagementMode {
+  COMPANION
+  STANDALONE
+}
+
+enum EngagementStatus {
+  ACTIVE
+  PAUSED
+  COMPLETED
+  ARCHIVED
+}
+
+enum GoalStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+  ABANDONED
+}
+
+enum AlertType {
+  STUCK
+  DISENGAGED
+  MILESTONE
+  MENTAL_HEALTH
+  ESCALATION
+}
+
+enum AlertStatus {
+  PENDING
+  ACKNOWLEDGED
+  RESOLVED
+}
+
+model User {
+  id        String   @id @default(cuid())
+  clerkId   String   @unique
+  email     String   @unique
+  name      String
+  role      UserRole
+  avatarUrl String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  coachProfile  CoachProfile?
+  clientProfile ClientProfile?
+  messages      Message[]
+
+  @@index([clerkId])
+}
+
+model CoachProfile {
+  id     String  @id @default(cuid())
+  userId String  @unique
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bio    String?
+
+  clients          ClientProfile[]
+  frameworks       Framework[]
+  knowledgeEntries KnowledgeEntry[]
+}
+
+model ClientProfile {
+  id      String           @id @default(cuid())
+  userId  String           @unique
+  user    User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  coachId String
+  coach   CoachProfile     @relation(fields: [coachId], references: [id], onDelete: Cascade)
+  mode    EngagementMode   @default(COMPANION)
+  status  EngagementStatus @default(ACTIVE)
+
+  title           String?
+  company         String?
+  industry        String?
+  teamSize        Int?
+  reportingTo     String?
+  keyStakeholders String?
+
+  engagementStart DateTime?
+  engagementEnd   DateTime?
+  totalSessions   Int       @default(0)
+
+  goals         Goal[]
+  assessments   Assessment[]
+  conversations Conversation[]
+  sessionNotes  SessionNote[]
+  alerts        Alert[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([coachId])
+}
+
+model Goal {
+  id              String        @id @default(cuid())
+  clientProfileId String
+  clientProfile   ClientProfile @relation(fields: [clientProfileId], references: [id], onDelete: Cascade)
+  title           String
+  description     String?
+  status          GoalStatus    @default(NOT_STARTED)
+  targetDate      DateTime?
+  completedAt     DateTime?
+  progressNotes   String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([clientProfileId])
+}
+
+model Assessment {
+  id              String        @id @default(cuid())
+  clientProfileId String
+  clientProfile   ClientProfile @relation(fields: [clientProfileId], references: [id], onDelete: Cascade)
+  type            String
+  title           String
+  data            Json
+  summary         String?
+  administeredAt  DateTime
+  createdAt       DateTime      @default(now())
+
+  @@index([clientProfileId])
+}
+
+model Conversation {
+  id              String        @id @default(cuid())
+  clientProfileId String
+  clientProfile   ClientProfile @relation(fields: [clientProfileId], references: [id], onDelete: Cascade)
+  title           String?
+  summary         String?
+  keyTakeaways    String?
+  actionItems     String?
+  moodIndicator   String?
+  messages        Message[]
+  startedAt       DateTime      @default(now())
+  endedAt         DateTime?
+
+  @@index([clientProfileId])
+  @@index([startedAt])
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderId       String?
+  sender         User?        @relation(fields: [senderId], references: [id])
+  role           String
+  content        String
+  metadata       Json?
+  createdAt      DateTime     @default(now())
+
+  @@index([conversationId])
+  @@index([createdAt])
+}
+
+model SessionNote {
+  id              String        @id @default(cuid())
+  clientProfileId String
+  clientProfile   ClientProfile @relation(fields: [clientProfileId], references: [id], onDelete: Cascade)
+  sessionDate     DateTime
+  notes           String
+  focusAreas      String?
+  commitments     String?
+  createdAt       DateTime      @default(now())
+
+  @@index([clientProfileId])
+}
+
+model Framework {
+  id                String       @id @default(cuid())
+  coachId           String
+  coach             CoachProfile @relation(fields: [coachId], references: [id], onDelete: Cascade)
+  name              String
+  purpose           String
+  steps             String
+  keyQuestions      String?
+  commonPitfalls    String?
+  successIndicators String?
+  relatedFrameworks String?
+  embedding         Float[]
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  @@index([coachId])
+}
+
+model KnowledgeEntry {
+  id        String       @id @default(cuid())
+  coachId   String
+  coach     CoachProfile @relation(fields: [coachId], references: [id], onDelete: Cascade)
+  title     String
+  content   String
+  source    String?
+  tags      String[]
+  embedding Float[]
+  createdAt DateTime     @default(now())
+
+  @@index([coachId])
+}
+
+model Alert {
+  id              String        @id @default(cuid())
+  clientProfileId String
+  clientProfile   ClientProfile @relation(fields: [clientProfileId], references: [id], onDelete: Cascade)
+  type            AlertType
+  status          AlertStatus   @default(PENDING)
+  title           String
+  description     String
+  conversationId  String?
+  resolvedAt      DateTime?
+  createdAt       DateTime      @default(now())
+
+  @@index([clientProfileId])
+  @@index([status])
+}
