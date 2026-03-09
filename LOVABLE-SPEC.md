@@ -1,4 +1,12 @@
-# AI Executive Coach — Lovable Build Spec
+# AI Executive Coach — Full Product Spec
+
+> This document serves two purposes:
+> 1. **Part 1 (Lovable Build Spec)** — paste this into Lovable to build the MVP
+> 2. **Part 2 (Future Roadmap)** — reference for all features to add after the initial build
+
+---
+
+# PART 1: LOVABLE BUILD SPEC (MVP)
 
 ## What This App Is
 
@@ -309,20 +317,6 @@ Use shadcn/ui components: Button, Card, Dialog, Input, Textarea, Select, Badge, 
 
 ---
 
-## What NOT to Build (will be added later outside Lovable)
-
-- Real AI/LLM integration (Claude API) — use mock responses for now
-- RAG pipeline / vector search / embeddings
-- Voice interface
-- File upload / PDF parsing
-- Email notifications
-- Proactive check-ins
-- Analytics / reporting
-- Payment / billing
-- Response validation (guardrail checking)
-
----
-
 ## Supabase Edge Functions (Optional Enhancement)
 
 If possible, create a Supabase Edge Function at `/functions/v1/chat` that:
@@ -336,6 +330,350 @@ This keeps the chat logic server-side and makes it easy to swap in real AI later
 
 ---
 
-## Summary
+## MVP Summary
 
 Build a two-sided app: a coach dashboard for managing clients/goals/notes/alerts/knowledge, and a client-facing chat interface with mock AI responses. Use Supabase for everything (auth, DB, RLS). Make the chat feel real and polished — it's the hero feature. The dashboard is functional but doesn't need to be flashy. Every piece of data should be persisted to the database. The mock AI will be replaced with Claude later.
+
+---
+---
+
+# PART 2: FUTURE ROADMAP (Post-Lovable)
+
+Everything below describes features to build after the MVP is working. These will be implemented outside Lovable, likely by migrating to a Next.js codebase or extending the Lovable app with custom code.
+
+---
+
+## Phase 2: Live AI Integration (Replace Mock with Claude)
+
+### Coaching Engine
+The core AI system that composes prompts and orchestrates responses. Replaces the mock response function.
+
+**System prompt structure** (assembled dynamically per request):
+
+```
+[IDENTITY BLOCK]
+You are the AI coaching companion for [Coach Name]. You embody their
+methodology, voice, and approach. You are NOT the human coach — you are
+their AI extension.
+
+[VOICE BLOCK]
+Communication style: warm, direct, action-oriented...
+(Loaded from a config or DB — the coach calibrates this)
+
+[CLIENT CONTEXT BLOCK]
+Client: {name}, {title} at {organization}
+Reports to: {reportingTo}. Has {directReports} direct reports.
+Coaching mode: {companion|standalone}
+Current goals: {goals list}
+Assessment highlights: {key assessment data points}
+Recent coach notes: {last 2-3 coach notes}
+Recent conversation themes: {summary of last few sessions}
+
+[KNOWLEDGE BLOCK]
+The following frameworks and content from [Coach Name]'s methodology
+are relevant to this conversation:
+---
+{RAG retrieved chunks, each with source attribution}
+---
+Reference these frameworks by name. Do not invent frameworks.
+
+[GUARDRAILS BLOCK]
+- NEVER fabricate advice, statistics, or research
+- If unsure, say "I'm not sure about that"
+- NEVER provide legal, financial, HR, or clinical advice
+- If the client expresses acute distress or crisis, respond with empathy
+  and provide: 988 Suicide & Crisis Lifeline, Crisis Text Line
+- Clearly identify yourself as an AI coaching companion
+- For complex topics, suggest discussing with [Coach Name] in their
+  next session
+
+[INSTRUCTION BLOCK]
+Ask one powerful question before offering advice. Balance support with
+challenge. Keep responses concise (2-4 paragraphs max unless the client
+asks for more). End with a clear next step or reflection question.
+```
+
+### Chat API Flow
+1. Validate input
+2. Load client profile + goals + recent coach notes from DB
+3. Query vector DB for relevant knowledge chunks using the user's message
+4. Compose the system prompt (coach voice + client context + retrieved knowledge + guardrails)
+5. Call Claude via streaming API with the full message history
+6. Save the user message and AI response to the database on stream completion
+7. Run response validator asynchronously on the completed response
+8. If the validator flags something, create an Alert record
+
+### Recommended Stack for AI Integration
+- **Claude API** (`@anthropic-ai/sdk`) — all reasoning and coaching responses
+- **Vercel AI SDK** (`ai` package) — `useChat` hook for streaming UI, `streamText` for server-side streaming. Massively accelerates chat implementation.
+- **Supabase Edge Functions** or **Next.js API routes** — host the chat endpoint
+
+---
+
+## Phase 3: RAG Pipeline (Knowledge Grounding)
+
+Ground all AI responses in the coach's actual frameworks and content. This is the anti-hallucination backbone.
+
+### Ingestion Pipeline
+1. Coach uploads a document (markdown or plain text) via the Knowledge Base page
+2. Chunk the document into ~500 token segments with ~50 token overlap
+3. Generate embeddings via OpenAI `text-embedding-3-small` ($0.02/1M tokens, 1536 dimensions)
+4. Upsert to a vector database (Pinecone) with metadata: `{ documentId, chunkIndex, source, title }`
+5. Update the `knowledge_documents` record with chunk count
+
+### Search
+1. Embed the user's query
+2. Query Pinecone with `topK: 5` and a relevance threshold (score > 0.75)
+3. Return text chunks with source metadata
+4. Inject into the system prompt's KNOWLEDGE BLOCK
+
+### Recommended Stack
+- **Pinecone** (`@pinecone-database/pinecone`) — managed vector DB with metadata filtering
+- **OpenAI** (just for `text-embedding-3-small`) — embedding generation only, all reasoning stays on Claude
+- Alternative: **pgvector** (Supabase extension) to keep everything in one DB. Simpler but less performant for large knowledge bases. The search abstraction makes this a one-file swap.
+
+---
+
+## Phase 4: Response Validation & Guardrails
+
+### Response Validator
+A secondary, cheaper AI call (Claude Haiku) that runs after each coaching response to check for:
+- Claims not grounded in the knowledge base or client data
+- Legal, financial, HR, or clinical advice
+- Crisis language in the user's message
+- Hallucinated frameworks, statistics, or research
+
+Returns structured JSON: `{ hallucination: bool, outOfScope: bool, crisisDetected: bool, details: string }`
+
+If any flag is true → create an Alert record for the coach.
+
+### Escalation Detection
+Automated detection of patterns that need coach attention:
+- **Crisis**: acute distress, suicidal ideation → immediate crisis resources + coach alert
+- **Stuck**: client repeating the same issue across 2+ sessions without progress
+- **Disengagement**: significant drop in usage frequency or message length
+- **Frustration**: client expresses frustration with the AI
+- **High stakes**: client facing a major decision (board presentation, firing, resignation)
+
+---
+
+## Phase 5: Session Summaries
+
+After a chat session ends (or on demand), generate an AI summary:
+- Key themes discussed
+- Action items and commitments
+- Emotional tone / energy level
+- Suggested follow-up topics
+
+Store in the `sessions.summary` and `sessions.action_items` fields. Show as a card in the chat UI and on the coach dashboard.
+
+---
+
+## Phase 6: Voice Interface
+
+### Architecture
+- **Speech-to-Text**: Deepgram or OpenAI Whisper (real-time transcription)
+- **LLM Processing**: Same coaching engine as text chat
+- **Text-to-Speech**: ElevenLabs or PlayHT (warm, professional voice)
+- **Alternative**: OpenAI Realtime API or Gemini Live for end-to-end lower latency
+
+### UX
+- Push-to-talk and hands-free modes
+- Visual indicators for listening / thinking / speaking states
+- "Coach is thinking..." indicator during processing
+- Automatic transcription of all voice sessions for history and review
+- Seamless switch between text and voice within a session
+- Target latency: < 500ms response time
+
+### UI Additions
+- Microphone button in the chat input area
+- Voice mode toggle in session settings
+- Waveform visualization during recording
+- Replay and bookmark key moments in voice sessions
+
+---
+
+## Phase 7: Proactive Check-ins & Accountability
+
+The AI initiates conversations based on:
+- Commitments made in previous sessions ("You committed to having the delegation conversation with Jamie by Friday. How did it go?")
+- Goal deadlines approaching
+- Detected patterns of avoidance or disengagement
+- Configurable frequency per client (daily, twice-weekly, weekly)
+
+### Implementation
+- Scheduled Supabase Edge Function or cron job
+- Checks client commitments and schedules against current date
+- Generates a check-in message and creates a new session
+- Sends notification (email or push) to the client
+
+---
+
+## Phase 8: Standalone Mode & Onboarding
+
+Full self-service coaching for clients without a live coaching engagement.
+
+### Onboarding Flow
+1. Subscriber signs up, selects plan
+2. Intake assessment: role, goals, challenges, leadership context (15-20 min guided form)
+3. AI generates initial development plan based on coach's methodology
+4. First coaching conversation on highest-priority goal
+5. Weekly cadence established with proactive check-ins
+
+### Features
+- Structured onboarding wizard (multi-step form)
+- AI-generated development plan (stored in client profile)
+- Milestone reviews that mimic the cadence of a live engagement
+- Upgrade path to live coaching clearly available
+- Lighter coach oversight (summary dashboards, not per-interaction review)
+
+---
+
+## Phase 9: Coach Calibration & Review Tools
+
+### AI Response Review
+- Coach can review AI responses and mark: "sounds like me" vs. "doesn't sound like me"
+- Feedback stored and used to refine system prompts
+- Track voice fidelity score over time (target: 85%+ "sounds like me")
+
+### Style Calibration
+- Coach adjusts voice parameters: warmth, directness, question-to-advice ratio
+- A/B comparison: "Which response sounds more like you?"
+- Signature phrases and metaphors captured from transcripts
+
+### Session Prep View
+- Pre-session brief for the coach before a live session
+- AI interaction summary since last live session
+- Mood/energy trends across conversations
+- Commitments tracker (made vs. kept)
+- Suggested topics for the upcoming session
+
+---
+
+## Phase 10: Client-Facing Progress Portal
+
+Clients see their own progress dashboard:
+- Goals with status and history
+- Session timeline (AI and live sessions)
+- Action items tracker
+- Development trajectory visualization
+- Key insights and breakthroughs highlighted
+
+---
+
+## Phase 11: Analytics & Reporting
+
+### Coach Analytics
+- Usage metrics: sessions per client per week, message counts, session duration
+- Engagement trends: which clients are active, declining, or churning
+- Goal completion rates
+- Common coaching topics (topic clustering across conversations)
+- Hallucination rate tracking (target: < 1% of responses)
+- Escalation accuracy (were alerts actionable? track false positive rate)
+
+### Enterprise Reporting
+- Aggregate engagement metrics across a cohort
+- ROI indicators: goal progress, behavioral change markers
+- Anonymized theme analysis (what are leaders struggling with?)
+
+---
+
+## Phase 12: Roleplay Mode
+
+AI plays specific characters for client practice:
+- Skeptical board member for presentation prep
+- Difficult direct report for feedback conversations
+- Demanding stakeholder for negotiation practice
+- New team member for onboarding conversations
+
+### Implementation
+- Mode selector in chat: "Practice with a character"
+- Character configuration: role, personality traits, difficulty level
+- AI switches persona while maintaining coaching awareness
+- Debrief after roleplay: "Here's what I noticed about your approach..."
+
+---
+
+## Phase 13: Enterprise & Platform Features
+
+- **SSO**: SAML/OIDC integration for enterprise customers
+- **Admin dashboard**: Organization-level view for HR/L&D teams
+- **Bulk licensing**: Manage cohorts of coaching clients
+- **Data export**: Compliance-ready data export for enterprise
+- **Multi-coach platform**: Support multiple coaches, each with their own voice, knowledge base, and client roster
+- **Mobile app**: React Native or native iOS/Android for push notifications and on-the-go coaching
+
+---
+
+## Phase 14: Payments & Billing
+
+### Pricing Tiers
+| Tier | Price | Audience |
+|------|-------|----------|
+| Bundled | Included in coaching fee | Active engagement clients |
+| Alumni | $149-299/mo | Post-engagement clients |
+| Standalone | $99-199/mo | No live engagement |
+| Enterprise | Custom | Corporate cohorts |
+
+### Implementation
+- Stripe integration for subscription billing
+- Plan management in Supabase (plan tier on client profile)
+- Usage limits per tier if needed
+- Upgrade/downgrade flows
+
+---
+
+## Anti-Hallucination Strategy (5 Layers)
+
+This is the product's most critical differentiator. All layers should be implemented by the end of Phase 4.
+
+| Layer | Description | Phase |
+|-------|-------------|-------|
+| 1. RAG Grounding | All responses generated with retrieved context from the coach's knowledge base | Phase 3 |
+| 2. Client-Context Grounding | Responses reference specific, verifiable client information (assessments, goals, history) | Phase 2 |
+| 3. Response Validation | Post-generation check via secondary AI call for ungrounded claims | Phase 4 |
+| 4. Behavioral Guardrails | System prompt instructions to cite sources, say "I don't know", stay in lane | Phase 2 |
+| 5. Continuous Improvement | Coach reviews flagged responses, corrections feed back into prompts and knowledge base | Phase 9 |
+
+---
+
+## Success Metrics
+
+| Metric | Target | When to Measure |
+|--------|--------|-----------------|
+| Client Engagement | 3+ AI interactions per week | Phase 2+ |
+| Goal Progress | 70% of goals show measurable progress | Phase 5+ |
+| Voice Fidelity | 85%+ coach-reviewed responses rated "sounds like me" | Phase 9+ |
+| Hallucination Rate | < 1% of responses contain ungrounded claims | Phase 4+ |
+| Client Satisfaction | NPS > 60 | Phase 8+ |
+| Retention | 80%+ monthly for standalone subscribers | Phase 8+ |
+| Escalation Accuracy | 90%+ of alerts are actionable | Phase 4+ |
+
+---
+
+## Coach Voice Specification (To Be Completed)
+
+| Attribute | Description |
+|-----------|-------------|
+| Tone | Warm + direct. Empathetic but action-oriented. |
+| Language | Conversational, not academic. Uses "you" frequently. Asks powerful questions before giving advice. |
+| Signature Phrases | *To be documented from transcripts* |
+| Feedback Style | Honest, specific, caring. Balances affirmation with challenge. |
+| Pacing | Doesn't rush. Allows space for reflection. But also pushes when client is avoiding. |
+| Boundaries | Will say "that's outside my lane" clearly and warmly. Will say "I don't know" without hedging. |
+
+---
+
+## Framework Library Template
+
+Each framework in the coach's methodology should be documented in this format for ingestion into the knowledge base:
+
+| Field | Content |
+|-------|---------|
+| Name | Framework name |
+| Purpose | When to use it / what problem it solves |
+| Steps | Step-by-step process |
+| Key Questions | Coaching questions associated with this framework |
+| Common Pitfalls | What clients typically get wrong |
+| Success Indicators | How to know it's working |
+| Related Frameworks | Connections to other tools in the methodology |
